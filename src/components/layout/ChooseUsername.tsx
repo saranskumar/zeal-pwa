@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -7,7 +7,26 @@ export function ChooseUsername() {
   const setProfile = useAuthStore((s) => s.setProfile)
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (username.length < 3) {
+      setIsAvailable(null)
+      return
+    }
+
+    setChecking(true)
+    const timeoutId = setTimeout(async () => {
+      const cleanUsername = username.toLowerCase().replace(/[^a-z0-9_]/g, '')
+      const { data } = await supabase.from('users').select('id').eq('username', cleanUsername).maybeSingle()
+      setIsAvailable(!data)
+      setChecking(false)
+    }, 400)
+
+    return () => clearTimeout(timeoutId)
+  }, [username])
 
   // Only show if the current username is the generic 'user_...'
   if (!profile || !profile.username.startsWith('user_')) return null
@@ -23,10 +42,8 @@ export function ChooseUsername() {
     setError(null)
     setLoading(true)
 
-    const { data: existing } = await supabase.from('users').select('id').eq('username', cleanUsername).maybeSingle()
-    if (existing) {
+    if (isAvailable === false) {
       setError("Username is already taken")
-      setLoading(false)
       return
     }
 
@@ -72,15 +89,36 @@ export function ChooseUsername() {
             />
           </div>
 
+          {/* Availability Status Indicator */}
+          <div className="flex items-center px-2 h-5 transform -translate-y-2">
+            {username.length > 0 && username.length < 3 ? (
+               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">At least 3 characters</span>
+            ) : username.length >= 3 ? (
+               checking ? (
+                 <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500"/> Checking availability
+                 </span>
+               ) : isAvailable === true ? (
+                 <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"/> Available
+                 </span>
+               ) : isAvailable === false ? (
+                 <span className="text-[11px] font-bold text-destructive uppercase tracking-widest flex items-center gap-1.5">
+                   <div className="w-1.5 h-1.5 rounded-full bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]"/> Taken
+                 </span>
+               ) : null
+            ) : <span />}
+          </div>
+
           {error && (
-            <p className="text-xs text-destructive font-bold bg-destructive/10 px-3 py-2 rounded-lg text-center">
+            <p className="text-xs text-destructive font-bold bg-destructive/10 px-3 py-2 rounded-lg text-center transform -translate-y-2">
               {error}
             </p>
           )}
 
           <button
             type="submit"
-            disabled={loading || username.length < 3}
+            disabled={loading || checking || !isAvailable || username.length < 3}
             className="h-12 w-full flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest rounded-2xl shadow-elevation-1 transition-all active:scale-95 disabled:opacity-60"
           >
             {loading ? 'Saving...' : 'Set Username'}
