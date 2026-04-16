@@ -9,10 +9,11 @@ const QUERY_KEY = 'daily-plan'
 // Extended type joining topic + subject data for display
 export interface DailyPlanWithDetails extends DailyPlan {
   topics: {
-    id:         string
-    title:      string
-    status:     string
-    subject_id: string
+    id:             string
+    title:          string
+    status:         string
+    subject_id:     string
+    priority_score: number
     subjects: {
       id:       string
       name:     string
@@ -31,7 +32,7 @@ export function useTodayPlan() {
     queryFn:  async () => {
       const { data, error } = await supabase
         .from('daily_plans')
-        .select('*, topics(id, title, status, subject_id, subjects(id, name, strength))')
+        .select('*, topics(id, title, status, subject_id, priority_score, subjects(id, name, strength))')
         .eq('user_id', userId!)
         .eq('assigned_date', today)
         .order('created_at', { ascending: true })
@@ -51,7 +52,7 @@ export function useFullPlan() {
     queryFn:  async () => {
       const { data, error } = await supabase
         .from('daily_plans')
-        .select('*, topics(id, title, status, subject_id, subjects(id, name, strength))')
+        .select('*, topics(id, title, status, subject_id, priority_score, subjects(id, name, strength))')
         .eq('user_id', userId!)
         .gte('assigned_date', format(new Date(), 'yyyy-MM-dd'))
         .order('assigned_date', { ascending: true })

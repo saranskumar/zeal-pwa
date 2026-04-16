@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
-import { WifiOff } from 'lucide-react'
 import { BottomNav } from './BottomNav'
 import { ChooseUsername } from './ChooseUsername'
 import { useUIStore } from '@/store/ui.store'
@@ -48,24 +47,17 @@ export function AppShell() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-background">
-      {/* Top App Bar */}
-      <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="flex items-center h-14 max-w-lg mx-auto px-4">
-          <img src="/zeal_logo.png" alt="Zeal Logo" className="w-8 h-8 rounded-lg shadow-elevation-1" />
-          <span className="ml-3 font-bold text-lg tracking-tight text-foreground">Zeal</span>
+      {/* Offline indicator — 3px amber bar, calm not alarming */}
+      {showOfflineBanner && !isOnline && (
+        <div id="offline-banner" className="offline-bar" aria-label="Offline mode active" />
+      )}
+
+      {/* Top App Bar — wordmark only */}
+      <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur-md border-b border-border">
+        <div className="flex items-center h-12 max-w-lg mx-auto px-4">
+          <span className="text-[15px] font-semibold tracking-tight text-foreground">Zeal</span>
         </div>
       </header>
-
-      {/* Offline banner */}
-      {showOfflineBanner && !isOnline && (
-        <div
-          id="offline-banner"
-          className="sticky top-0 left-0 right-0 z-[60] flex items-center justify-center gap-2 bg-amber-500 text-white text-xs font-bold py-1.5"
-        >
-          <WifiOff size={12} />
-          <span>Offline — changes will sync later</span>
-        </div>
-      )}
 
       {/* Page content area — padded for bottom nav */}
       <main

@@ -64,7 +64,7 @@ export function ChooseUsername() {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/90 backdrop-blur-md">
       <div className="w-full max-w-sm surface-container p-8 animate-slide-up shadow-elevation-2">
         <div className="flex flex-col items-center gap-4 mb-6">
           <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center text-primary-foreground font-black text-3xl shadow-elevation-1">

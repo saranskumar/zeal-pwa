@@ -390,7 +390,7 @@ export default function OnboardingPage() {
       </div>
 
       {/* Sticky CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-6 pb-safe pt-4 bg-background/80 backdrop-blur-xl border-t border-border/50">
+      <div className="fixed bottom-0 left-0 right-0 px-6 pb-safe pt-4 bg-background/90 backdrop-blur-xl border-t border-border/50">
         <button
           id="onboarding-next-btn"
           disabled={loading}

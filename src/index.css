@@ -1,58 +1,100 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── DESIGN SYSTEM TOKENS ──────────────────────────────────────────────────── */
+/* "Quiet Discipline" — Zeal design system v2                                    */
+
 @layer base {
   :root {
-    --background: 210 20% 98%;      /* #F4F6F8 */
-    --foreground: 210 20% 13%;      /* #212B36 */
-    --card: 0 0% 100%;              /* #FFFFFF */
-    --card-foreground: 210 20% 13%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 20% 13%;
-    --primary: 161 72% 39%;         /* Emerald 600 */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 24% 94%;       /* #F0F2F4 */
-    --secondary-foreground: 210 20% 13%;
-    --muted: 210 20% 95%;
-    --muted-foreground: 210 15% 45%;/* #637381 */
-    --accent: 161 50% 95%;
-    --accent-foreground: 161 72% 39%;
-    --destructive: 0 84% 60%;
+    /* Background & Surface */
+    --background: 210 13% 97%;    /* #F5F6F7 */
+    --surface:    0 0% 100%;      /* #FFFFFF */
+    --foreground: 210 16% 14%;    /* #1E2330 */
+
+    /* UI tokens */
+    --card:                 0 0% 100%;
+    --card-foreground:      210 16% 14%;
+    --popover:              0 0% 100%;
+    --popover-foreground:   210 16% 14%;
+
+    /* Accent — Emerald. Used sparingly. */
+    --primary:              161 72% 39%;   /* #10b981 */
+    --primary-foreground:   0 0% 100%;
+
+    /* Secondary surfaces */
+    --secondary:            210 13% 94%;   /* #EEF0F2 */
+    --secondary-foreground: 210 16% 14%;
+
+    /* Muted */
+    --muted:                210 13% 94%;
+    --muted-foreground:     210 10% 50%;   /* #737B87 */
+
+    /* Semantic */
+    --accent:               161 50% 95%;
+    --accent-foreground:    161 72% 39%;
+    --destructive:          0 72% 51%;     /* #D93025 – keeps itself calm */
     --destructive-foreground: 0 0% 100%;
-    --border: 210 20% 88%;          /* Light boundary */
-    --input:  210 20% 88%;
-    --ring: 161 72% 39%;
-    --radius: 1rem;
+
+    /* Borders */
+    --border:  210 12% 88%;       /* #DDE0E5 */
+    --input:   210 12% 88%;
+    --ring:    161 72% 39%;
+
+    /* Strict 4px grid spacing tokens */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 20px;
+
+    /* Radius tokens */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius:    12px;
+
+    /* Motion — max 200ms */
+    --duration-fast:   100ms;
+    --duration-base:   200ms;
+    --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 210 20% 9%;       /* #161C24 */
-    --foreground: 0 0% 100%;
-    --card: 210 20% 13%;            /* #212B36 */
-    --card-foreground: 0 0% 100%;
-    --popover: 210 20% 13%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 161 72% 45%; 
-    --primary-foreground: 210 20% 9%;
-    --secondary: 210 20% 18%;       /* #2A3441 */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 20% 18%;
-    --muted-foreground: 210 15% 60%;/* #919EAB */
-    --accent: 161 20% 20%;
-    --accent-foreground: 161 72% 45%;
-    --destructive: 0 84% 60%;
+    --background: 210 18% 9%;     /* #131820 */
+    --surface:    210 18% 12%;    /* #191F29 */
+    --foreground: 0 0% 95%;
+
+    --card:               210 18% 13%;
+    --card-foreground:    0 0% 95%;
+    --popover:            210 18% 13%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary:            161 72% 45%;
+    --primary-foreground: 210 18% 9%;
+
+    --secondary:          210 18% 18%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted:              210 18% 18%;
+    --muted-foreground:   210 12% 55%;    /* #8B919E */
+
+    --accent:             161 20% 20%;
+    --accent-foreground:  161 72% 45%;
+
+    --destructive:        0 65% 57%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 20% 25%;
-    --input:  210 20% 25%;
-    --ring: 161 72% 45%;
+
+    --border:  210 18% 22%;       /* #292E3A */
+    --input:   210 18% 22%;
+    --ring:    161 72% 45%;
   }
 
   * {
-    @apply border-border;
     box-sizing: border-box;
+    border-color: hsl(var(--border));
   }
 
   html {
@@ -61,14 +103,16 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: 'rlig' 1, 'calt' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
-  /* Mobile viewport fix */
   #root {
     min-height: 100dvh;
     display: flex;
@@ -76,43 +120,172 @@
   }
 }
 
+/* ─── ATOMIC COMPONENTS ─────────────────────────────────────────────────────── */
+
 @layer components {
-  /* Safe area for bottom nav on notched phones */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* ── ATOMS ── */
+
+  /* Text label — uppercase mono, muted */
+  .label-mono {
+    font-family: 'JetBrains Mono', monospace;
+    @apply text-[11px] font-medium tracking-widest uppercase text-muted-foreground;
   }
 
-  .bottom-nav-height {
-    height: calc(64px + env(safe-area-inset-bottom, 0px));
+  /* Divider — 1px, no drama */
+  .divider {
+    @apply h-px w-full bg-border;
   }
 
-  /* Material surface styles */
-  .surface-container {
-    @apply bg-card border border-border/80 shadow-elevation-1 rounded-2xl transition-all duration-300;
+  /* Status dot */
+  .status-dot {
+    @apply w-1.5 h-1.5 rounded-full flex-shrink-0;
   }
-  
-  .surface-container-high {
-    @apply bg-card border border-border shadow-elevation-2 rounded-2xl transition-all duration-300;
+  .status-dot-high  { @apply status-dot bg-destructive; }
+  .status-dot-med   { @apply status-dot bg-amber-400; }
+  .status-dot-late  { @apply status-dot bg-destructive; }
+  .status-dot-done  { @apply status-dot bg-primary; }
+
+  /* ── MOLECULES ── */
+
+  /* Priority tag */
+  .tag { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] label-mono; }
+  .tag-high { @apply tag bg-destructive/10 text-destructive border border-destructive/20; }
+  .tag-med  { @apply tag bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-400/20; }
+  .tag-late { @apply tag bg-destructive/10 text-destructive border border-destructive/20; }
+
+  /* XP inline counter */
+  .xp-inline {
+    font-family: 'JetBrains Mono', monospace;
+    @apply text-[13px] font-medium text-primary tabular-nums;
   }
 
-  /* Strength indicators (Minimalist Material) */
-  .strength-weak    { @apply bg-red-100/50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-full px-3 py-1 text-xs font-bold; }
-  .strength-average { @apply bg-amber-100/50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded-full px-3 py-1 text-xs font-bold; }
-  .strength-strong  { @apply bg-emerald-100/50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-full px-3 py-1 text-xs font-bold; }
+  /* ── SURFACES ── */
 
-  /* Priority badge */
-  .priority-high   { @apply bg-red-50 text-red-700 border border-red-200; }
-  .priority-medium { @apply bg-amber-50 text-amber-700 border border-amber-200; }
-  .priority-low    { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+  /* Core surface — white card, single elevation */
+  .surface {
+    @apply bg-card border border-border rounded-[var(--radius-md)] transition-all;
+    box-shadow: 0 0 0 0 transparent,
+                0 1px 2px 0 rgba(145, 158, 171, 0.08),
+                0 4px 12px -2px rgba(145, 158, 171, 0.08);
+  }
+
+  /* Slightly raised surface */
+  .surface-raised {
+    @apply bg-card border border-border rounded-[var(--radius-md)];
+    box-shadow: 0 0 0 0 transparent,
+                0 2px 4px 0 rgba(145, 158, 171, 0.10),
+                0 8px 20px -4px rgba(145, 158, 171, 0.12);
+  }
+
+  /* Deprecated alias for legacy code */
+  .surface-container      { @apply surface; }
+  .surface-container-high { @apply surface-raised; }
+
+  /* ── TOPIC CARD ── */
+
+  .topic-card {
+    @apply surface flex items-center gap-3 px-4 py-3;
+    min-height: 52px;
+    transition: opacity var(--duration-base) var(--easing-standard),
+                box-shadow var(--duration-base) var(--easing-standard);
+  }
+  .topic-card-done {
+    @apply topic-card opacity-40;
+  }
+  .topic-card-late {
+    @apply topic-card border-destructive/20 bg-destructive/5;
+  }
+
+  /* ── CUSTOM MINIMAL CHECKBOX ── */
+
+  .zeal-checkbox {
+    @apply w-[18px] h-[18px] rounded-[5px] border-2 border-border flex items-center justify-center
+           flex-shrink-0 transition-colors;
+    transition: background-color var(--duration-base) var(--easing-standard),
+                border-color var(--duration-base) var(--easing-standard);
+  }
+  .zeal-checkbox:hover { @apply border-primary/60; }
+  .zeal-checkbox-done  { @apply zeal-checkbox bg-primary border-primary; }
+
+  /* ── BOTTOM NAV (TEXT ONLY — NO ICONS) ── */
+
+  .bottom-nav-item {
+    @apply relative flex flex-col items-center justify-center flex-1 py-2 text-center
+           text-muted-foreground transition-colors;
+    transition: color var(--duration-base) var(--easing-standard);
+  }
+  .bottom-nav-item.active { @apply text-foreground; }
+  .bottom-nav-label {
+    @apply text-[12px] font-medium tracking-tight;
+  }
+  .bottom-nav-indicator {
+    @apply absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full;
+  }
+
+  /* ── XP PROGRESS BAR ── (3px, no animation loop) */
+
+  .xp-bar-track {
+    @apply h-[3px] w-full bg-border rounded-full overflow-hidden;
+  }
+  .xp-bar-fill {
+    @apply h-full bg-primary rounded-full;
+    transition: width 200ms var(--easing-standard);
+  }
+
+  /* ── STATES ── */
+
+  /* Empty state — calm, no icon fluff */
+  .empty-state {
+    @apply flex flex-col items-start gap-2 px-4 py-8;
+  }
+  .empty-state-title {
+    @apply text-[15px] font-semibold text-foreground;
+  }
+  .empty-state-desc {
+    @apply text-[13px] text-muted-foreground;
+  }
+
+  /* Offline banner — contained, not alarming */
+  .offline-bar {
+    @apply fixed top-0 left-0 right-0 z-[70] h-[3px] bg-amber-400;
+  }
+
+  /* ── SCREEN WRAPPER ── */
+
+  .screen {
+    @apply px-4 pt-12 pb-24 max-w-lg mx-auto w-full;
+  }
+
+  /* ── STRENGTH TAGS ── */
+  .strength-weak    { @apply text-[11px] font-medium px-2 py-0.5 rounded-[5px] bg-destructive/10  text-destructive; }
+  .strength-average { @apply text-[11px] font-medium px-2 py-0.5 rounded-[5px] bg-amber-500/10   text-amber-700 dark:text-amber-400; }
+  .strength-strong  { @apply text-[11px] font-medium px-2 py-0.5 rounded-[5px] bg-primary/10     text-primary; }
+
+  /* ── SAFE AREA ── */
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .bottom-nav-height { height: calc(60px + env(safe-area-inset-bottom, 0px)); }
+
+  /* ── SCROLLBAR HIDE ── */
+  .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 }
+
+/* ─── UTILITIES ─────────────────────────────────────────────────────────────── */
 
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
-  /* Scrollbar hide for mobile carousels */
-  .scrollbar-none {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+  /* Micro-animations — ≤200ms, ease-out only */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .scrollbar-none::-webkit-scrollbar { display: none; }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in  { animation: fade-in  200ms var(--easing-standard) both; }
+  .animate-slide-up { animation: slide-up 200ms var(--easing-standard) both; }
 }

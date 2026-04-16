@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { format } from 'date-fns'
-import { CheckCircle2, Clock, AlertCircle, Flame, BookOpen, Target } from 'lucide-react'
 import { useTodayPlan } from '@/hooks/useDailyPlan'
 import { useTodayScore } from '@/hooks/useScores'
 import { useMarkTopicDone } from '@/hooks/useTopics'
@@ -9,138 +8,164 @@ import { RescheduleEngine } from '@/core/reschedule-engine'
 import { cn } from '@/lib/utils'
 import confetti from 'canvas-confetti'
 
+// ─── Confetti guard: only fires once per day on full completion ───────────────
+let confettiFiredToday = false
+function tryFireConfetti() {
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const key   = `confetti_${today}`
+  if (sessionStorage.getItem(key)) return
+  sessionStorage.setItem(key, '1')
+  confetti({ particleCount: 80, spread: 60, origin: { y: 0.65 }, colors: ['#10b981', '#6ee7b7'] })
+  confettiFiredToday = true
+  void confettiFiredToday // suppress unused warning
+}
+
+// ─── Priority helpers ─────────────────────────────────────────────────────────
+function getPriorityTag(score?: number | null, carried?: boolean) {
+  if (carried) return 'late'
+  if (!score) return null
+  if (score >= 7) return 'high'
+  if (score >= 4) return 'med'
+  return null
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const user       = useAuthStore((s) => s.user)
-  const { data: todayPlan, isLoading: planLoading } = useTodayPlan()
+  const user     = useAuthStore((s) => s.user)
+  const { data: todayPlan, isLoading } = useTodayPlan()
   const { data: score }  = useTodayScore()
   const markDone         = useMarkTopicDone()
+  const prevAllDone      = useRef(false)
 
-  const handleMarkDone = (topicId: string) => {
-    markDone.mutate(topicId, {
-      onSuccess: () => {
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.7 },
-          colors: ['#10b981', '#34d399', '#6ee7b7']
-        })
-      }
-    })
-  }
+  const today     = format(new Date(), 'EEE, d MMM')
+  const pending   = todayPlan?.filter((p) => !p.is_completed) ?? []
+  const completed = todayPlan?.filter((p) => p.is_completed)  ?? []
+  const overdue   = todayPlan?.filter((p) => p.carried_over && !p.is_completed) ?? []
+  const today_new = pending.filter((p) => !p.carried_over)
+  const total     = todayPlan?.length ?? 0
 
-  const today          = format(new Date(), 'EEEE, MMMM d')
-  const pending        = todayPlan?.filter((p) => !p.is_completed) ?? []
-  const completed      = todayPlan?.filter((p) => p.is_completed)  ?? []
-  const overdueTopics  = todayPlan?.filter((p) => p.carried_over && !p.is_completed) ?? []
+  // XP bar — cap at 100
+  const xp        = Math.min(score?.daily_points ?? 0, 100)
+  const streak    = score?.streak_count ?? 0
+  const allDone   = total > 0 && pending.length === 0
 
-  // Run rescheduler once per day on app open
+  // Run reschedule engine once per day on open
   useEffect(() => {
     if (!user?.id) return
     const engine = new RescheduleEngine(user.id)
-    engine.hasRunToday().then((hasRun) => {
-      if (!hasRun) engine.run('missed_topic').catch(console.error)
-    })
+    engine.hasRunToday().then((has) => { if (!has) engine.run('missed_topic').catch(console.error) })
   }, [user?.id])
 
-  if (planLoading) return <PageSkeleton />
+  // Fire confetti exactly once when all tasks flip to done
+  useEffect(() => {
+    if (allDone && !prevAllDone.current) tryFireConfetti()
+    prevAllDone.current = allDone
+  }, [allDone])
+
+  const handleMark = (topicId: string) => markDone.mutate(topicId)
+
+  if (isLoading) return <Skeleton />
 
   return (
-    <div className="px-4 pt-10 pb-4 max-w-lg mx-auto">
-      {/* Greeting */}
-      <div className="mb-6 animate-fade-in">
-        <p className="text-sm text-muted-foreground font-medium">{today}</p>
-        <h1 className="text-2xl font-bold text-foreground mt-0.5">
-          {pending.length === 0 ? "You're all caught up! 🎉" : "Today's Plan"}
+    <div className="screen">
+
+      {/* ── Date + header ─────────────────────────────────────────────────── */}
+      <div className="mb-5 animate-fade-in">
+        <p className="label-mono mb-1">{today}</p>
+        <h1 className="text-[22px] font-semibold text-foreground leading-tight">
+          {allDone ? 'All done.' : 'Today'}
         </h1>
       </div>
 
-      {/* Quick stats strip */}
-      <div className="grid grid-cols-3 gap-3 mb-6 animate-fade-in">
-        <StatCard
-          icon={<Flame size={16} className="text-orange-500" />}
-          label="Streak"
-          value={`${score?.streak_count ?? 0}d`}
-          color="orange"
-        />
-        <StatCard
-          icon={<Target size={16} className="text-zeal-500" />}
-          label="Points"
-          value={score?.daily_points ?? 0}
-          color="zeal"
-        />
-        <StatCard
-          icon={<CheckCircle2 size={16} className="text-green-500" />}
-          label="Done"
-          value={`${completed.length}/${todayPlan?.length ?? 0}`}
-          color="green"
-        />
-      </div>
-
-      {/* Overdue / carried-over topics */}
-      {overdueTopics.length > 0 && (
-        <section className="mb-5 animate-slide-up">
-          <div className="flex items-center gap-1.5 mb-3">
-            <AlertCircle size={14} className="text-destructive" />
-            <h2 className="text-sm font-semibold text-destructive uppercase tracking-wide">
-              Overdue from yesterday
-            </h2>
+      {/* ── Daily Progress ────────────────────────────────────────────────── */}
+      {total > 0 && (
+        <div className="mb-6 animate-fade-in">
+          {/* XP bar — 3px, no animation loop */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="label-mono">Progress</span>
+            <span className="xp-inline">{xp} xp</span>
           </div>
+          <div className="xp-bar-track">
+            <div className="xp-bar-fill" style={{ width: `${total > 0 ? (completed.length / total) * 100 : 0}%` }} />
+          </div>
+          {/* Summary row */}
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-[12px] text-muted-foreground">
+              {completed.length} of {total} topics
+            </span>
+            {/* Streak — number only, no icon, no animation */}
+            <span className="label-mono text-foreground">
+              {streak > 0 ? `${streak} day streak` : '—'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── All done state ────────────────────────────────────────────────── */}
+      {allDone && (
+        <div className="empty-state animate-fade-in">
+          <p className="empty-state-title">You finished everything.</p>
+          <p className="empty-state-desc">Come back tomorrow for your next plan.</p>
+        </div>
+      )}
+
+      {/* ── Overdue / carried-over section ───────────────────────────────── */}
+      {overdue.length > 0 && (
+        <section className="mb-5 animate-fade-in">
+          <div className="divider mb-3" />
+          <p className="label-mono text-destructive mb-3">Carried over</p>
           <div className="flex flex-col gap-2">
-            {overdueTopics.map((plan) => (
+            {overdue.map((plan) => (
               <TopicCard
                 key={plan.id}
                 plan={plan}
-                overdue
-                onMarkDone={() => handleMarkDone(plan.topic_id)}
-                loading={markDone.isPending}
+                variant="late"
+                onMark={() => handleMark(plan.topic_id)}
+                marking={markDone.isPending}
               />
             ))}
           </div>
         </section>
       )}
 
-      {/* Today's pending topics */}
-      {pending.filter((p) => !p.carried_over).length > 0 && (
-        <section className="mb-5 animate-slide-up">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            To study today
-          </h2>
+      {/* ── Today's pending topics ────────────────────────────────────────── */}
+      {today_new.length > 0 && (
+        <section className="mb-5 animate-fade-in">
+          {overdue.length > 0 && <div className="divider mb-3" />}
+          <p className="label-mono mb-3">To study</p>
           <div className="flex flex-col gap-2">
-            {pending
-              .filter((p) => !p.carried_over)
-              .map((plan) => (
-                <TopicCard
-                  key={plan.id}
-                  plan={plan}
-                  onMarkDone={() => handleMarkDone(plan.topic_id)}
-                  loading={markDone.isPending}
-                />
-              ))}
-          </div>
-        </section>
-      )}
-
-      {/* Completed topics */}
-      {completed.length > 0 && (
-        <section className="animate-fade-in">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Completed
-          </h2>
-          <div className="flex flex-col gap-2">
-            {completed.map((plan) => (
-              <TopicCard key={plan.id} plan={plan} done />
+            {today_new.map((plan) => (
+              <TopicCard
+                key={plan.id}
+                plan={plan}
+                variant="default"
+                onMark={() => handleMark(plan.topic_id)}
+                marking={markDone.isPending}
+              />
             ))}
           </div>
         </section>
       )}
 
-      {/* Empty state */}
-      {(todayPlan?.length ?? 0) === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
-          <BookOpen size={40} className="text-zeal-200 mb-3" />
-          <p className="font-semibold text-foreground">No plan for today</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Go to Subjects and add topics to generate your plan
+      {/* ── Completed (sunk, dimmed) ──────────────────────────────────────── */}
+      {completed.length > 0 && !allDone && (
+        <section className="animate-fade-in">
+          <div className="divider mb-3" />
+          <p className="label-mono mb-3">Done</p>
+          <div className="flex flex-col gap-2">
+            {completed.map((plan) => (
+              <TopicCard key={plan.id} plan={plan} variant="done" />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Empty state — no plan at all ─────────────────────────────────── */}
+      {total === 0 && (
+        <div className="empty-state animate-fade-in">
+          <p className="empty-state-title">No plan for today.</p>
+          <p className="empty-state-desc">
+            Go to Subjects, add topics, and let the planner build your day.
           </p>
         </div>
       )}
@@ -148,121 +173,101 @@ export default function HomePage() {
   )
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function StatCard({
-  icon, label, value, color,
-}: {
-  icon:  React.ReactNode
-  label: string
-  value: string | number
-  color: 'orange' | 'zeal' | 'green'
-}) {
-  return (
-    <div className="surface-container py-4 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 hover:shadow-elevation-2 active:scale-95">
-      <div className="flex items-center justify-center p-2 rounded-full bg-secondary">
-        {icon}
-      </div>
-      <div className="text-center">
-        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{label}</p>
-        <p className={cn(
-          'text-2xl font-black mt-0.5',
-          color === 'orange' && 'text-orange-500',
-          color === 'zeal'   && 'text-primary',
-          color === 'green'  && 'text-emerald-500',
-        )}>
-          {value}
-        </p>
-      </div>
-    </div>
-  )
-}
+// ─── TopicCard ────────────────────────────────────────────────────────────────
 
 type PlanItem = NonNullable<ReturnType<typeof useTodayPlan>['data']>[number]
 
 function TopicCard({
   plan,
-  done,
-  overdue,
-  onMarkDone,
-  loading,
+  variant = 'default',
+  onMark,
+  marking,
 }: {
-  plan:        PlanItem
-  done?:       boolean
-  overdue?:    boolean
-  onMarkDone?: () => void
-  loading?:    boolean
+  plan:      PlanItem
+  variant?:  'default' | 'late' | 'done'
+  onMark?:   () => void
+  marking?:  boolean
 }) {
   const topic   = plan.topics
   const subject = topic?.subjects
+  const tag     = getPriorityTag(topic?.priority_score, plan.carried_over)
 
   return (
     <div
       className={cn(
-        'surface-container flex items-center gap-4 px-4 py-4 transition-all duration-300',
-        done    && 'bg-secondary/50 opacity-60 grayscale-[0.2]',
-        overdue && 'border-destructive/20 bg-destructive/5',
-        !done && !overdue && 'hover:shadow-elevation-2 hover:border-primary/20',
+        variant === 'done' ? 'topic-card-done' : variant === 'late' ? 'topic-card-late' : 'topic-card',
       )}
     >
-      {/* Check button or done indicator */}
-      <button
-        disabled={done || loading}
-        onClick={onMarkDone}
-        id={`mark-done-${plan.topic_id}`}
-        className={cn(
-          'w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300',
-          done
-            ? 'bg-primary border-primary'
-            : overdue
-            ? 'border-destructive/50 hover:bg-destructive/10'
-            : 'border-primary/30 hover:bg-primary/10 hover:border-primary',
-        )}
-      >
-        {done && <CheckCircle2 size={16} className="text-primary-foreground" />}
-        {loading && <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />}
-      </button>
+      {/* Minimal checkbox */}
+      {variant !== 'done' ? (
+        <button
+          onClick={onMark}
+          disabled={marking}
+          id={`mark-${plan.topic_id}`}
+          aria-label={`Mark "${topic?.title}" as done`}
+          className={cn(
+            'zeal-checkbox',
+            variant === 'late' && 'border-destructive/40',
+          )}
+        >
+          {marking && (
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-border border-t-primary animate-spin" />
+          )}
+        </button>
+      ) : (
+        // Done checkbox — filled
+        <div className="zeal-checkbox-done" aria-hidden="true">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
 
+      {/* Text block — single scan */}
       <div className="flex-1 min-w-0">
         <p className={cn(
-          'text-sm font-medium truncate',
-          done ? 'line-through text-muted-foreground' : 'text-foreground'
+          'text-[14px] font-medium truncate leading-snug',
+          variant === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'
         )}>
           {topic?.title ?? '—'}
         </p>
         {subject && (
-          <p className="text-xs text-muted-foreground mt-0.5 truncate">{subject.name}</p>
+          <p className="text-[12px] text-muted-foreground truncate mt-0.5">{subject.name}</p>
         )}
       </div>
 
-      {/* Strength badge */}
-      {subject && (
-        <span
-          className={cn(
-            'text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0',
-            subject.strength === 'weak'    && 'strength-weak',
-            subject.strength === 'average' && 'strength-average',
-            subject.strength === 'strong'  && 'strength-strong',
+      {/* Right side — priority tag OR strength, not both */}
+      {variant !== 'done' && (
+        <div className="flex-shrink-0">
+          {tag === 'high' && <span className="tag-high">high</span>}
+          {tag === 'med'  && <span className="tag-med">med</span>}
+          {tag === 'late' && <span className="tag-late">late</span>}
+          {!tag && subject?.strength && (
+            <span className={cn(
+              subject.strength === 'weak'    && 'strength-weak',
+              subject.strength === 'average' && 'strength-average',
+              subject.strength === 'strong'  && 'strength-strong',
+            )}>
+              {subject.strength}
+            </span>
           )}
-        >
-          {subject.strength}
-        </span>
+        </div>
       )}
-
-      {overdue && <Clock size={13} className="text-red-400 flex-shrink-0" />}
     </div>
   )
 }
 
-function PageSkeleton() {
+// ─── Loading Skeleton ─────────────────────────────────────────────────────────
+
+function Skeleton() {
   return (
-    <div className="px-4 pt-10 max-w-lg mx-auto animate-pulse">
-      <div className="h-5 w-40 bg-muted rounded-lg mb-2" />
-      <div className="h-7 w-56 bg-muted rounded-lg mb-6" />
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {[0, 1, 2].map((i) => <div key={i} className="h-20 bg-muted rounded-2xl" />)}
-      </div>
-      {[0, 1, 2].map((i) => <div key={i} className="h-16 bg-muted rounded-2xl mb-2" />)}
+    <div className="screen animate-pulse">
+      <div className="h-3 w-24 bg-muted rounded mb-3" />
+      <div className="h-6 w-20 bg-muted rounded mb-6" />
+      <div className="h-[3px] bg-muted rounded-full mb-6" />
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="h-[52px] bg-muted rounded-[12px] mb-2" />
+      ))}
     </div>
   )
 }
