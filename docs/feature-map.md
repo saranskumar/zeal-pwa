@@ -3,8 +3,9 @@
 ## Current Implementation (Phase 1 & 2 Scaffold MVP)
 
 [X] **Client Routing & Auth Protection**
-  - Supabase OTP Auth Configured
+  - Supabase OTP + **Google OAuth** flow
   - Zustand Auth Store
+  - **Username Interceptor Gate** with real-time uniqueness validation
 
 [X] **Progressive Onboarding** (Redesigned Flow)
   - Interactive multi-step funnel capturing Subjects, Topics, Intensity.

@@ -28,3 +28,17 @@
    - **Decision**: PWA migrated to **Material Design 3** (M3) aesthetics using Emerald Green (#10b981) branding. Replaced generic Tailwind shadows with M3 Elevation tokens. Added `canvas-confetti` reward system for psychological reinforcement on topic completion.
    - **Consequence**: Better dark mode support, higher visual clarity, and increased user satisfaction/engagement through visual feedback.
 
+7. **Minimals.cc Aesthetic Pivot**
+   - **Context**: Need for an ultra-clean, enterprise-grade focus for a study app.
+   - **Decision**: Shifted from high-vibrancy Material 3 to the **Minimals.cc** design protocol. Replaced stark shadows with low-opacity diffused elevations and used soft slates for backgrounds.
+   - **Consequence**: Reduced visual fatigue, more modern "SaaS" feel, and better clarity on mobile.
+
+8. **Post-Login Username Interceptor Gate**
+   - **Context**: Social features (leaderboards, friend requests) require unique, readable identifiers.
+   - **Decision**: Implemented an `AppShell` level interceptor (`ChooseUsername.tsx`) that halts UX progress for users with generic system-generated usernames. Includes a debounced real-time availability check against the PostgreSQL database.
+   - **Consequence**: Guaranteed uniqueness of human-readable IDs without complicating the initial auth transaction.
+
+9. **Hybrid OAuth + OTP Auth Flow**
+   - **Context**: User friction during login leads to drop-offs.
+   - **Decision**: Added Google OAuth support alongside the 6-digit Email OTP system. Standardized redirect logic to ensure session injection before routing.
+   - **Consequence**: Lower barrier to entry for desktop users and mobile users with Google accounts.
