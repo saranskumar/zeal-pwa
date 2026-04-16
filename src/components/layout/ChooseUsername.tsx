@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth.store'
+import { cn } from '@/lib/utils'
 
 export function ChooseUsername() {
   const profile = useAuthStore((s) => s.profile)
@@ -44,6 +45,7 @@ export function ChooseUsername() {
 
     if (isAvailable === false) {
       setError("Username is already taken")
+      setLoading(false)
       return
     }
 
@@ -65,53 +67,54 @@ export function ChooseUsername() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/90 backdrop-blur-md">
-      <div className="w-full max-w-sm surface-container p-8 animate-slide-up shadow-elevation-2">
-        <div className="flex flex-col items-center gap-4 mb-6">
-          <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center text-primary-foreground font-black text-3xl shadow-elevation-1">
-            Z
+      <div className="w-full max-w-sm surface p-8 animate-slide-up">
+        <div className="flex flex-col items-center gap-4 mb-8">
+          <div className="w-16 h-16 bg-primary/10 rounded-[16px] flex items-center justify-center flex-shrink-0">
+            <span className="text-[24px] font-bold text-primary">Z</span>
           </div>
-          <h2 className="text-xl font-black text-foreground tracking-tight text-center">Welcome to Zeal!</h2>
-          <p className="text-sm font-medium text-muted-foreground text-center">
-            Pick a secure, unique username before continuing into your dashboard.
-          </p>
+          <div className="text-center">
+            <h2 className="text-[22px] font-semibold text-foreground mb-1">Welcome to Zeal</h2>
+            <p className="text-[14px] text-muted-foreground mt-1">Pick a unique username to continue.</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5 relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">@</span>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-              placeholder="username"
-              className="h-12 pl-8 pr-5 rounded-2xl bg-secondary border-2 border-transparent focus:border-primary/20 outline-none font-bold text-sm transition-all text-foreground"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div>
+            <div className="flex justify-between items-end mb-2">
+              <label htmlFor="username" className="label-mono">Username</label>
+              
+              {/* Availability Indicator */}
+              <div className="h-4">
+                {username.length > 0 && username.length < 3 ? (
+                  <span className="text-[11px] text-muted-foreground font-mono">Min 3 chars</span>
+                ) : username.length >= 3 ? (
+                  checking ? (
+                    <span className="text-[11px] text-amber-500 font-mono animate-pulse">Checking…</span>
+                  ) : isAvailable === true ? (
+                    <span className="text-[11px] text-primary font-mono">Available</span>
+                  ) : isAvailable === false ? (
+                    <span className="text-[11px] text-destructive font-mono">Taken</span>
+                  ) : null
+                ) : null}
+              </div>
+            </div>
 
-          {/* Availability Status Indicator */}
-          <div className="flex items-center px-2 h-5 transform -translate-y-2">
-            {username.length > 0 && username.length < 3 ? (
-               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">At least 3 characters</span>
-            ) : username.length >= 3 ? (
-               checking ? (
-                 <span className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
-                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500"/> Checking availability
-                 </span>
-               ) : isAvailable === true ? (
-                 <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"/> Available
-                 </span>
-               ) : isAvailable === false ? (
-                 <span className="text-[11px] font-bold text-destructive uppercase tracking-widest flex items-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]"/> Taken
-                 </span>
-               ) : null
-            ) : <span />}
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">@</span>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                placeholder="username"
+                className="w-full h-12 bg-background border border-border rounded-[10px] pl-8 pr-4 text-[14px] text-foreground font-mono placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/40 transition-all"
+                required
+              />
+            </div>
           </div>
 
           {error && (
-            <p className="text-xs text-destructive font-bold bg-destructive/10 px-3 py-2 rounded-lg text-center transform -translate-y-2">
+            <p className="text-[13px] text-destructive label-mono bg-destructive/10 px-3 py-2 rounded-[8px]">
               {error}
             </p>
           )}
@@ -119,9 +122,9 @@ export function ChooseUsername() {
           <button
             type="submit"
             disabled={loading || checking || !isAvailable || username.length < 3}
-            className="h-12 w-full flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest rounded-2xl shadow-elevation-1 transition-all active:scale-95 disabled:opacity-60"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-[10px] transition-colors disabled:opacity-50"
           >
-            {loading ? 'Saving...' : 'Set Username'}
+            {loading ? 'Saving…' : 'Continue'}
           </button>
         </form>
       </div>
