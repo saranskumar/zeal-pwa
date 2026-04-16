@@ -6,47 +6,47 @@
 
 @layer base {
   :root {
-    --background: 156 40% 99%;
-    --foreground: 156 50% 5%;
-    --card: 156 20% 100%;
-    --card-foreground: 156 50% 10%;
-    --popover: 156 20% 100%;
-    --popover-foreground: 156 50% 5%;
-    --primary: 161 72% 39%; /* Emerald 600 */
+    --background: 210 20% 98%;      /* #F4F6F8 */
+    --foreground: 210 20% 13%;      /* #212B36 */
+    --card: 0 0% 100%;              /* #FFFFFF */
+    --card-foreground: 210 20% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 13%;
+    --primary: 161 72% 39%;         /* Emerald 600 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 161 20% 95%;
-    --secondary-foreground: 161 60% 20%;
-    --muted: 156 10% 94%;
-    --muted-foreground: 156 10% 40%;
-    --accent: 161 50% 92%;
-    --accent-foreground: 161 60% 20%;
+    --secondary: 210 24% 94%;       /* #F0F2F4 */
+    --secondary-foreground: 210 20% 13%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 210 15% 45%;/* #637381 */
+    --accent: 161 50% 95%;
+    --accent-foreground: 161 72% 39%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 156 10% 90%;
-    --input: 156 10% 90%;
+    --border: 210 20% 88%;          /* Light boundary */
+    --input:  210 20% 88%;
     --ring: 161 72% 39%;
     --radius: 1rem;
   }
 
   .dark {
-    --background: 161 40% 4%;
-    --foreground: 161 20% 98%;
-    --card: 161 30% 6%;
-    --card-foreground: 161 20% 98%;
-    --popover: 161 30% 6%;
-    --popover-foreground: 161 20% 98%;
-    --primary: 161 72% 45%; /* Emerald 500 */
-    --primary-foreground: 161 20% 4%;
-    --secondary: 161 20% 12%;
-    --secondary-foreground: 161 20% 90%;
-    --muted: 161 20% 12%;
-    --muted-foreground: 161 10% 60%;
-    --accent: 161 20% 15%;
-    --accent-foreground: 161 20% 98%;
+    --background: 210 20% 9%;       /* #161C24 */
+    --foreground: 0 0% 100%;
+    --card: 210 20% 13%;            /* #212B36 */
+    --card-foreground: 0 0% 100%;
+    --popover: 210 20% 13%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 161 72% 45%; 
+    --primary-foreground: 210 20% 9%;
+    --secondary: 210 20% 18%;       /* #2A3441 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 20% 18%;
+    --muted-foreground: 210 15% 60%;/* #919EAB */
+    --accent: 161 20% 20%;
+    --accent-foreground: 161 72% 45%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 161 20% 15%;
-    --input: 161 20% 15%;
+    --border: 210 20% 25%;
+    --input:  210 20% 25%;
     --ring: 161 72% 45%;
   }
 
@@ -88,11 +88,11 @@
 
   /* Material surface styles */
   .surface-container {
-    @apply bg-card border-border shadow-elevation-1 rounded-2xl;
+    @apply bg-card border border-border/80 shadow-elevation-1 rounded-2xl transition-all duration-300;
   }
   
   .surface-container-high {
-    @apply bg-card border-border shadow-elevation-2 rounded-2xl;
+    @apply bg-card border border-border shadow-elevation-2 rounded-2xl transition-all duration-300;
   }
 
   /* Strength indicators (Minimalist Material) */

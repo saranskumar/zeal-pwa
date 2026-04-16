@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { WifiOff } from 'lucide-react'
 import { BottomNav } from './BottomNav'
+import { ChooseUsername } from './ChooseUsername'
 import { useUIStore } from '@/store/ui.store'
 import { replayOfflineQueue, getQueueLength } from '@/lib/offline-queue'
 import { cn } from '@/lib/utils'
@@ -73,6 +74,7 @@ export function AppShell() {
           showOfflineBanner && !isOnline && 'pt-10'
         )}
       >
+        <ChooseUsername />
         <Outlet />
       </main>
 

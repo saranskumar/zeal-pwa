@@ -38,9 +38,14 @@ export default function ProfilePage() {
     : '0.0'
 
   async function handleLogout() {
-    await supabase.auth.signOut()
-    reset()
-    navigate('/login')
+    try {
+      await supabase.auth.signOut()
+    } catch (e) {
+      console.error("Logout error:", e)
+    } finally {
+      reset()
+      navigate('/login')
+    }
   }
 
   return (

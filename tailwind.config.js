@@ -63,9 +63,9 @@ export default {
         },
       },
       boxShadow: {
-        'elevation-1': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-        'elevation-2': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'elevation-3': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'elevation-1': '0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)',
+        'elevation-2': '0 0 2px 0 rgba(145, 158, 171, 0.2), 0 20px 40px -4px rgba(145, 158, 171, 0.16)',
+        'elevation-3': '0 0 2px 0 rgba(145, 158, 171, 0.2), 0 24px 48px 0 rgba(145, 158, 171, 0.24)',
       },
       borderRadius: {
         lg: 'var(--radius)',

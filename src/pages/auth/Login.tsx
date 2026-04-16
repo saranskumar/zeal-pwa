@@ -164,7 +164,7 @@ export default function LoginPage() {
             <div>
               <h2 className="text-lg font-semibold text-foreground">Check your email</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Enter the 6-digit code or <strong className="text-primary">click the secure link</strong> we sent to <strong>{email}</strong>
+                Enter the 6-digit code we sent to <strong>{email}</strong>
               </p>
             </div>
 
